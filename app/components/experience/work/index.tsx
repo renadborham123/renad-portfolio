@@ -1,0 +1,79 @@
+import { ScrollControls } from "@react-three/drei";
+import { usePortalStore, useScrollStore } from "@stores";
+import { useEffect } from "react";
+import * as THREE from "three";
+import { Memory } from "../../models/Memory";
+import Timeline from "./Timeline";
+
+const Work = () => {
+  const isActive = usePortalStore((state) => state.activePortalId === 'work');
+  const { scrollProgress, setScrollProgress } = useScrollStore();
+
+  const handleScroll = (event: Event) => {
+    const target = event.target as HTMLElement;
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight - target.clientHeight;
+    const progress = Math.min(Math.max(scrollTop / scrollHeight, 0), 1);
+    setScrollProgress(progress);
+  }
+
+  // Hack: If the portal is active, add the scroll event listener to the scroll
+  // wrapper div. If the portal is not active, remove the scroll event listener.
+  // ScrollControls doesn't work out of the box, so we have to manually handle
+  // the scroll event.
+  useEffect(() => {
+    if (isActive) {
+      const scrollWrapper = document.querySelector('div[style*="z-index: -1"]') as HTMLElement;
+      const originalScrollWrapper = document.querySelector('div[style*="z-index: 1"]') as HTMLElement;
+
+      if (!scrollWrapper || !originalScrollWrapper) return;
+
+      setScrollProgress(0);
+      scrollWrapper.addEventListener('scroll', handleScroll);
+      scrollWrapper.style.zIndex = '1';
+      scrollWrapper.style.visibility = 'visible';
+      scrollWrapper.style.pointerEvents = 'auto';
+      scrollWrapper.style.overflowX = 'hidden';
+      scrollWrapper.style.overflowY = 'auto';
+
+      originalScrollWrapper.style.zIndex = '-1';
+      originalScrollWrapper.style.visibility = 'hidden';
+      originalScrollWrapper.style.pointerEvents = 'none';
+      originalScrollWrapper.style.overflow = 'hidden';
+    } else {
+      const scrollWrapper = document.querySelector('div[style*="z-index: 1"]') as HTMLElement;
+      const originalScrollWrapper = document.querySelector('div[style*="z-index: -1"]') as HTMLElement;
+
+      if (!scrollWrapper || !originalScrollWrapper) return;
+
+      scrollWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+      setScrollProgress(0);
+      scrollWrapper.removeEventListener('scroll', handleScroll);
+      scrollWrapper.style.zIndex = '-1';
+      scrollWrapper.style.visibility = 'hidden';
+      scrollWrapper.style.pointerEvents = 'none';
+      scrollWrapper.style.overflow = 'hidden';
+
+      originalScrollWrapper.style.zIndex = '1';
+      originalScrollWrapper.style.visibility = 'visible';
+      originalScrollWrapper.style.pointerEvents = 'auto';
+      originalScrollWrapper.style.overflowX = 'hidden';
+      originalScrollWrapper.style.overflowY = 'auto';
+    }
+  }, [isActive]);
+
+  return (
+    <group>
+      <mesh receiveShadow>
+        <planeGeometry args={[4, 4, 1]} />
+        <shadowMaterial opacity={0.1} />
+      </mesh>
+      <ScrollControls style={{ zIndex: -1}} pages={2} maxSpeed={0.4}>
+        <Memory scale={new THREE.Vector3(5, 5, 5)} position={new THREE.Vector3(0, -6, 1)}/>
+        <Timeline progress={isActive ? scrollProgress : 0} />
+      </ScrollControls>
+    </group>
+  );
+};
+
+export default Work;
