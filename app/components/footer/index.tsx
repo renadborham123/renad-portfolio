@@ -87,6 +87,8 @@ const FooterLinkItem = ({ link }: { link: FooterLink }) => {
 const Footer = () => {
   const groupRef = useRef<THREE.Group>(null);
   const data = useScroll();
+  const linkSpacing = isMobile ? 1.1 : 2;
+  const linksStartX = -((FOOTER_LINKS.length - 1) * linkSpacing) / 2;
 
   useFrame(() => {
     const d = data.range(0.8, 0.2);
@@ -98,7 +100,7 @@ const Footer = () => {
   const getLinks = () => {
     return FOOTER_LINKS.map((link, i) => {
       return (
-        <group key={i} position={[i * (isMobile ? 1.1 : 2), 0, 0]}>
+        <group key={i} position={[i * linkSpacing, 0, 0]}>
           <FooterLinkItem link={link}/>
         </group>
       );
@@ -107,7 +109,7 @@ const Footer = () => {
 
   return (
     <group position={[0, -44, 18]} rotation={[-Math.PI / 2, 0, 0]} ref={groupRef}>
-      <group position={[isMobile ? -2.5 : -4, 0, 0]}>
+      <group position={[linksStartX, 0, 0]}>
         { getLinks() }
       </group>
     </group>

@@ -20,12 +20,6 @@ export const FOOTER_LINKS: FooterLink[] = [
     url: 'mailto:renadborham@gmail.com',
   },
   {
-    name: 'Phone',
-    hoverText: '01013167209',
-    icon: 'icons/file.svg',
-    url: 'tel:+201013167209',
-  },
-  {
     name: 'CV',
     hoverText: 'Download',
     icon: 'icons/file.svg',
